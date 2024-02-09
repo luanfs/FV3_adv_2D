@@ -9,11 +9,11 @@ datadir  ='../data/' # must exist
 figformat = 'png'
 
 # some constants
-N    = 192 # number of cells
-tc   = 3  # test case
-hord = 8  # advection schemes
+N    = 48 # number of cells
+tc   = 1  # test case
+hord = 0  # advection schemes
 dp   = 2  # departure point schemes
-nplots = 13
+nplots = 5
 
 
 # x axis points for plotting
@@ -21,12 +21,12 @@ x = np.linspace(0, 1, N)
 y = np.linspace(0, 1, N)
 x, y = np.meshgrid(x,y)
 
-if tc == 1 or tc == 2:
+if tc == 1 or tc == 2 or tc == 3:
    qmin = -0.1
    qmax =  1.2
-elif tc == 3:
+elif tc == 4:
    qmin = -0.1
-   qmax =  2.2
+   qmax =  5
 
 for t in range(0, nplots+1):
    # basename for plotting
@@ -54,7 +54,6 @@ for t in range(0, nplots+1):
    # Label
    plt.xlabel('$x$')
    plt.ylabel('$y$')
-   plt.legend()
    plt.grid(True, which="both")
    title = "N="+str(N)+", time = "+time+" days, CFL="+cfl#+", mass variation="+massvar  
    plt.title(title)

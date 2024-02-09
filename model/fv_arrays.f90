@@ -7,9 +7,11 @@ module fv_arrays
 !========================================================================
 public
 integer, public, parameter :: R_GRID = selected_real_kind(12,100)
-real(R_GRID), public, parameter :: pio4 = datan(1.d0)
-real(R_GRID), public, parameter :: pi = 4.d0*pio4
-real(R_GRID), public, parameter :: erad = 6.37122e6
+real(R_GRID), public, parameter :: pio4  = datan(1.d0)
+real(R_GRID), public, parameter :: pi    = 4.d0*pio4
+real(R_GRID), public, parameter :: pio2  = pi*0.5d0
+real(R_GRID), public, parameter :: twopi = pi*2.d0
+real(R_GRID), public, parameter :: erad  = 6.37122e6
 real(R_GRID), public, parameter :: eradi = 1.d0/erad
 real(R_GRID), public, parameter :: day2sec = 86400.d0
 real(R_GRID), public, parameter :: sec2day = 1.d0/day2sec
@@ -52,6 +54,8 @@ type fv_grid_type
    type(point_structure), allocatable, dimension(:,:) :: bgrid
    type(point_structure), allocatable, dimension(:,:) :: cgrid
    type(point_structure), allocatable, dimension(:,:) :: dgrid
+   real(R_GRID), allocatable ::  area(:,:)
+   real(R_GRID), allocatable :: rarea(:,:)
    real(R_GRID) :: dx, dy
    integer :: npx       ! number of interior cells (x direction)
    integer :: npy       ! number of interior cells (y direction)

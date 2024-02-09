@@ -28,9 +28,9 @@ N = 48
 Ns=[]
 
 # time step for N
-if tc==1 or tc==2:
+if tc==1 or tc==2 or tc==3:
   dt = 14400
-elif tc==3:
+elif tc==4:
   dt = 7200
 else:
   print('invalid TC')

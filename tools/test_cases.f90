@@ -6,7 +6,7 @@ module test_cases
 ! https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere/blob/main/tools/test_cases.F90
 !========================================================================
 use fv_arrays,  only: fv_grid_bounds_type, fv_grid_type, fv_atmos_type, &
-                      point_structure, R_GRID, pi, erad, eradi, day2sec
+                      point_structure, R_GRID, pi, erad, eradi, day2sec, twopi, pio2
 implicit none
 
 contains
@@ -49,6 +49,7 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
             x = agrid(i,j)%x
             y = agrid(i,j)%y
             c = 2d0*pi*erad
+            c = 1.d0!2d0*pi*erad
             if (x<=0.4*c .or. x>=0.6d0*c .or. y<=0.4*c .or. y>=0.6d0*c) then
                qa(i,j) = 0.d0
             else
@@ -57,15 +58,25 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
          enddo
       enddo
 
-   else if (test_case==2 .or. test_case==3) then
+   else if (test_case==2) then
       do i = is, ie
          do j = js, je
             x = agrid(i,j)%x
             y = agrid(i,j)%y
-            qa(i,j) = 0.d0 + 1.d0* dexp(-10*(dcos(x*0.5d0*eradi))**2)*dexp(-10*(dcos(y*0.5d0*eradi))**2)
+            qa(i,j) = 0.d0 + 1.d0* dexp(-10*(dcos(x*pi))**2)*dexp(-10*(dcos(y*pi))**2)
+         enddo
+      enddo
+   else if (test_case==3 .or. test_case==4) then
+      do i = is, ie
+         do j = js, je
+            x = agrid(i,j)%x*eradi/twopi
+            y = agrid(i,j)%y*eradi/twopi
+            qa(i,j) = 0.d0    + 1.d0* dexp(-10*(dsin((x-0.6)*pi))**2)*dexp(-10*(dcos(y*pi))**2)
+            qa(i,j) = qa(i,j) + 1.d0* dexp(-10*(dsin((x-0.4)*pi))**2)*dexp(-10*(dcos(y*pi))**2)
          enddo
       enddo
    else
+
 
    endif
 
@@ -135,20 +146,52 @@ subroutine compute_wind_u(u, x, y, t, test_case)
    real(R_GRID), intent(OUT) :: u
    real(R_GRID), intent(IN)  :: x, y, t
    integer, intent(IN) :: test_case
-   real(R_GRID) :: Tf, u0, u1, x1, c
+   real(R_GRID) :: c, Lx, Ly, Tf, arg1, arg2, arg3, x1, y1, Ubar
+   real(R_GRID) :: u0, u1
 
    Tf = 12.d0*day2sec
+   Tf = 5.d0
    select case (test_case)
       case(1,2)
-         u = 2d0*pi*erad/Tf
+         !u = 2d0*pi*erad/Tf
+         u = 0.2d0
 
       case(3)
+         Lx = twopi
+         Ly = pi
+
+         c = (10.d0/Tf)*(Lx/twopi)**2
+
+         x1 = x*eradi/twopi
+         y1 = y*eradi/twopi
+
+         x1 = -pi + twopi*x1
+         y1 = -pio2 + pi*y1
+
+         arg1 = twopi*(x1/Lx - t/Tf)
+         arg2 = pi*y1/Ly
+         arg3 = pi*t/Tf
+
+         u = dsin(arg1)**2
+         u = u*2.d0
+         u = u*dcos(arg2)
+         u = u*dsin(arg2)
+         u = u*dcos(arg3)
+         u = u*c
+         u = u*pi/Ly
+         u = u/twopi
+         u = u-Lx/Tf
+         u = -u*erad
+
+      case(4)
+         !Ubar = (2.d0*pi*erad)/Tf
+         !u = -Ubar*(dsin((x+pi)/2.d0)**2)*(dsin(y))*(dcos(y*0.5d0)**2)*(dcos(pi*t/Tf))
          c = 2d0*pi*erad/Tf
          u0 = c
          u1 = c
          x1 = x/(2d0*pi*erad)
+         y1 = y/(2d0*pi*erad)
          u = u0*dsin(pi*(x1-t/Tf))**2*dcos(pi*t/Tf) + u1
-
       case default
          print*, 'error in compute_wind: invalid testcase, ', test_case
          stop
@@ -159,19 +202,51 @@ subroutine compute_wind_v(v, x, y, t, test_case)
    real(R_GRID), intent(OUT) :: v
    real(R_GRID), intent(IN)  :: x, y, t
    integer, intent(IN) :: test_case
-   real(R_GRID) :: Tf, v0, v1, y1, c
+   real(R_GRID) :: c, Lx, Ly, Tf, arg1, arg2, arg3, x1, y1, Ubar
+   real(R_GRID) :: u0, u1
 
    Tf = 12.d0*day2sec
+   Tf = 5.d0
    select case (test_case)
       case(1,2)
          v  = 2d0*pi*erad/Tf
+         v = 0.2d0
 
       case(3)
-         c  = 2d0*pi*erad/Tf
-         v0 = c
-         v1 = c
+         Lx = twopi
+         Ly = pi
+
+         c = (10.d0/Tf)*(Lx/twopi)**2
+
+         x1 = x*eradi/twopi
+         y1 = y*eradi/twopi
+
+         x1 = -pi + twopi*x1
+         y1 = -pio2 + pi*y1
+
+         arg1 = twopi*(x1/Lx - t/Tf)
+         arg2 = pi*y1/Ly
+         arg3 = pi*t/Tf
+
+         v = 2.d0
+         v = v*dsin(arg1)
+         v = v*dcos(arg1)
+         v = v*dcos(arg2)**2
+         v = v*dcos(arg3)
+         v = v*c
+         v = v*twopi/Ly
+         v = -v/pi
+         v = v*erad
+
+      case(4)
+         !Ubar = (2.d0*pi*erad)/Tf
+         !v = (Ubar/2.d0)*(dsin((x+pi)))*(dcos(y/2.d0)**3)*(dcos(pi*t/Tf))
+         c = 2d0*pi*erad/Tf
+         u0 = c
+         u1 = c
+         x1 = x/(2d0*pi*erad)
          y1 = y/(2d0*pi*erad)
-         v  = v0*dsin(pi*(y1-t/Tf))**2*dcos(pi*t/Tf) + v1
+         v = u0*dsin(pi*(y1-t/Tf))**2*dcos(pi*t/Tf) + u1
 
       case default
          print*, 'error in compute_wind: invalid testcase, ', test_case

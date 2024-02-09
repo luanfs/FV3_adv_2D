@@ -52,7 +52,7 @@ use fv_arrays, only: fv_grid_type, fv_grid_bounds_type, R_GRID
 contains
  subroutine fv_tp_2d(q, outer_crx, outer_cry, inner_crx, inner_cry, hord, fx, fy, &
                      outer_xfx, outer_yfx, inner_xfx, inner_yfx, &
-                     gridstruct, bd, lim_fac)
+                     gridstruct, bd, ra_x, ra_y, lim_fac)
    type(fv_grid_bounds_type), intent(IN) :: bd
    integer, intent(in)::hord
 
@@ -68,8 +68,8 @@ contains
    real(R_GRID), intent(in)::  outer_yfx(bd%isd:bd%ied,bd%js:bd%je+1 )  !
    real(R_GRID), intent(in)::  inner_yfx(bd%isd:bd%ied,bd%js:bd%je+1 )  !
 
-   !real(R_GRID), intent(in):: ra_x(bd%is:bd%ie,bd%jsd:bd%jed)
-   !real(R_GRID), intent(in):: ra_y(bd%isd:bd%ied,bd%js:bd%je)
+   real(R_GRID), intent(in):: ra_x(bd%is:bd%ie,bd%jsd:bd%jed)
+   real(R_GRID), intent(in):: ra_y(bd%isd:bd%ied,bd%js:bd%je)
    real(R_GRID), intent(inout):: q(bd%isd:bd%ied,bd%jsd:bd%jed)  ! transported scalar
    real(R_GRID), intent(out)::fx(bd%is:bd%ie+1 ,bd%js:bd%je)    ! Flux in x ( E )
    real(R_GRID), intent(out)::fy(bd%is:bd%ie,   bd%js:bd%je+1 )    ! Flux in y ( N )
@@ -87,7 +87,6 @@ contains
    real(R_GRID):: fy2(bd%isd:bd%ied,bd%js:bd%je+1)
 
    integer i, j
-
    integer:: is, ie, js, je, isd, ied, jsd, jed
 
    is  = bd%is
@@ -101,27 +100,57 @@ contains
    jed = bd%jed
 
 
-   !call  xppm(fx1, q, crx, hord, is, ie, isd, ied, bd%npx,  lim_fac)
+   !==================================================================================================================
+   call yppm(fy2, q, inner_cry, hord, isd,ied,isd,ied, js,je,jsd,jed, lim_fac)
+
+   do j=js,je+1
+      do i=isd,ied
+         fyy(i,j) = inner_yfx(i,j) * fy2(i,j)
+      enddo
+   enddo
+
+   do j=js,je
+      do i=isd,ied
+         q_i(i,j) = (q(i,j)*gridstruct%area(i,j) + fyy(i,j)-fyy(i,j+1))/ra_y(i,j)
+         !q_i(i,j) = q(i,j) -(fyy(i,j+1)-fyy(i,j))*gridstruct%rarea(i,j)
+      enddo
+   enddo
+
+   call xppm(fx, q_i, outer_crx, hord, is,ie,isd,ied, js,je,jsd,jed, lim_fac)
+
+
+   !==================================================================================================================
    call xppm(fx2, q, inner_crx, hord, is,ie,isd,ied, jsd,jed,jsd,jed, lim_fac)
-   call yppm(fy2, q, inner_cry, hord, isd,ied, isd,ied, js,je,jsd,jed, lim_fac)
-   do i=is,ie+1
-      do j=jsd,jed
+
+   do j=jsd,jed
+      do i=is,ie+1
          fxx(i,j) =  inner_xfx(i,j) * fx2(i,j)
       enddo
-   enddo
+   enddo 
 
-   do i=is,ie+1
-      do j=js,je
-         fx(i,j) =  inner_xfx(i,j) * fx2(i,j)
+   do j=jsd,jed
+      do i=is,ie
+         q_j(i,j) = (q(i,j)*gridstruct%area(i,j) + fxx(i,j)-fxx(i+1,j))/ra_x(i,j)
+         !q_j(i,j) = q(i,j)-(fxx(i+1,j)-fxx(i,j))*gridstruct%rarea(i,j)
+      enddo
+   Enddo
+
+   call yppm(fy, q_j, outer_cry, hord, is,ie,isd,ied, js,je,jsd,jed, lim_fac)
+
+
+   !==================================================================================================================
+   do j=js,je
+      do i=is,ie+1
+         fx(i,j) = 0.5*(fx(i,j)*outer_xfx(i,j) + fx2(i,j)*inner_xfx(i,j))
+         !fx(i,j) = fx2(i,j)*inner_xfx(i,j)
       enddo
    enddo
-
-   do i=is,ie
-      do j=js,je+1
-         fy(i,j) =  inner_yfx(i,j) * fy2(i,j)
+   do j=js,je+1
+      do i=is,ie
+         fy(i,j) = 0.5*(fy(i,j)*outer_yfx(i,j) + fy2(i,j)*inner_yfx(i,j))
+         !fy(i,j) = 0.d0
       enddo
    enddo
- 
  end subroutine fv_tp_2d
 
  subroutine xppm(flux, q, c, iord, is,ie,isd,ied, jfirst,jlast,jsd,jed, lim_fac)

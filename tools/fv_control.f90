@@ -43,6 +43,8 @@ subroutine init_grid(gridstruct, bd)
    type(point_structure), pointer, dimension(:,:) :: cgrid
    type(point_structure), pointer, dimension(:,:) :: dgrid
 
+   real(R_GRID), pointer, dimension(:,:) :: area
+   real(R_GRID), pointer, dimension(:,:) :: rarea
    real(R_GRID), pointer :: dx, dy
    integer :: is, ie, isd, ied
    integer :: js, je, jsd, jed
@@ -64,17 +66,26 @@ subroutine init_grid(gridstruct, bd)
    allocate(gridstruct%bgrid(isd:ied+1, jsd:jed+1))
    allocate(gridstruct%cgrid(isd:ied+1, jsd:jed  ))
    allocate(gridstruct%dgrid(isd:ied  , jsd:jed+1))
+   allocate(gridstruct% area(isd:ied  , jsd:jed  ))
+   allocate(gridstruct%rarea(isd:ied  , jsd:jed  ))
 
    agrid => gridstruct%agrid
    bgrid => gridstruct%bgrid
    cgrid => gridstruct%cgrid
    dgrid => gridstruct%dgrid
+
+   area  => gridstruct%area
+   rarea => gridstruct%rarea
    dx    => gridstruct%dx
    dy    => gridstruct%dy
 
-   dx = 2.d0*pi*erad/bd%npx
-   dy = 2.d0*pi*erad/bd%npy
-   
+   !dx = 2.d0*pi*erad/bd%npx
+   !dy = 2.d0*pi*erad/bd%npy
+   dx = 1.d0/bd%npx
+   dy = 1.d0/bd%npy
+ 
+   area = dx*dy
+   rarea = 1.d0/area
    ! compute c grid local coordinates
    do i = isd, ied+1
       do j = jsd, jed+1

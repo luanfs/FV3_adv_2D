@@ -201,4 +201,46 @@ subroutine compute_cfl(gridstruct, bd, crx, cry, uc, vc, dt, h)
    enddo
 end subroutine compute_cfl
 
+subroutine compute_ra_x_and_ra_y(ra_x, ra_y, inner_xfx, inner_yfx, inner_crx, inner_cry, gridstruct, bd)
+    type(fv_grid_bounds_type), intent(IN) :: bd
+    type(fv_grid_type), intent(IN), target :: gridstruct
+    real(R_GRID), intent(INOUT), dimension(bd%is:bd%ie  , bd%jsd:bd%jed  ) :: ra_x
+    real(R_GRID), intent(IN)   , dimension(bd%is:bd%ie+1, bd%jsd:bd%jed  ) :: inner_xfx
+    real(R_GRID), intent(IN)   , dimension(bd%is:bd%ie+1, bd%jsd:bd%jed  ) :: inner_crx
+
+    real(R_GRID), intent(INOUT), dimension(bd%isd:bd%ied, bd%js:bd%je    ) :: ra_y
+    real(R_GRID), intent(IN)   , dimension(bd%isd:bd%ied, bd%js:bd%je+1  ) :: inner_yfx
+    real(R_GRID), intent(IN)   , dimension(bd%isd:bd%ied, bd%js:bd%je+1  ) :: inner_cry
+
+    ! Local:
+    integer :: i, j
+    integer :: is, ie, js, je
+    integer :: isd, ied, jsd, jed
+ 
+    real(R_GRID), pointer, dimension(:,:)   :: area
+
+    area => gridstruct%area
+
+    is  = bd%is
+    ie  = bd%ie
+    js  = bd%js
+    je  = bd%je
+    isd = bd%isd
+    ied = bd%ied
+    jsd = bd%jsd
+    jed = bd%jed
+
+
+    do j=jsd,jed
+       do i=is,ie
+          ra_x(i,j) = area(i,j) + inner_xfx(i,j) - inner_xfx(i+1,j)
+       enddo
+    enddo
+    do j=js,je
+       do i=isd,ied
+          ra_y(i,j) = area(i,j) + inner_yfx(i,j) - inner_yfx(i,j+1)
+       enddo
+    enddo
+end subroutine compute_ra_x_and_ra_y
+
 end module sw_core 
