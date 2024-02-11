@@ -30,7 +30,7 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
    type(fv_grid_bounds_type), intent(IN) :: bd
    type(point_structure), pointer, dimension(:,:) :: agrid
    real(R_GRID), intent(OUT) :: qa(bd%isd:bd%ied,bd%jsd:bd%jed)
-   real(R_GRID) :: x, y, c
+   real(R_GRID) :: x, y, c, z1, z2
    integer, intent(IN) :: test_case
    integer :: is, ie
    integer :: js, je
@@ -69,10 +69,13 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
    else if (test_case==3 .or. test_case==4) then
       do i = is, ie
          do j = js, je
-            x = agrid(i,j)%x*eradi/twopi
-            y = agrid(i,j)%y*eradi/twopi
-            qa(i,j) = 0.d0    + 1.d0* dexp(-10*(dsin((x-0.6)*pi))**2)*dexp(-10*(dcos(y*pi))**2)
-            qa(i,j) = qa(i,j) + 1.d0* dexp(-10*(dsin((x-0.4)*pi))**2)*dexp(-10*(dcos(y*pi))**2)
+            x = agrid(i,j)%x
+            y = agrid(i,j)%y
+            z1 = dexp(-10.d0*(dcos(pi*(x-0.1)))**2)
+            z1 = z1*dexp(-10.d0*(dcos(pi*y))**2)
+            z2 = dexp(-10.d0*(dcos(pi*(x+0.1)))**2)
+            z2 = z2*dexp(-10.d0*(dcos(pi*y))**2)
+            qa(i,j) = z1+z2
          enddo
       enddo
    else
@@ -106,8 +109,8 @@ subroutine calc_winds(uc, vc, bd, gridstruct, time, test_case)
    type(fv_grid_type), target, intent(INOUT) :: gridstruct
    type(fv_grid_bounds_type), intent(IN) :: bd
    type(point_structure), pointer, dimension(:,:) :: cgrid, dgrid
-   real(R_GRID), intent(OUT) :: uc(bd%isd:bd%ied+1,bd%jsd:bd%jed  )
-   real(R_GRID), intent(OUT) :: vc(bd%isd:bd%ied  ,bd%jsd:bd%jed+1)
+   real(R_GRID), intent(INOUT) :: uc(bd%isd:bd%ied+1,bd%jsd:bd%jed  )
+   real(R_GRID), intent(INOUT) :: vc(bd%isd:bd%ied  ,bd%jsd:bd%jed+1)
    real(R_GRID), intent(IN) :: time
    integer, intent(IN) :: test_case
    integer :: is, ie
@@ -128,7 +131,6 @@ subroutine calc_winds(uc, vc, bd, gridstruct, time, test_case)
          call compute_wind_u(uc(i,j), cgrid(i,j)%x, cgrid(i,j)%y, time, test_case)
       enddo
    enddo
-
    ! v at dgrid
     do i = is, ie
       do j = js, je+1
@@ -146,31 +148,33 @@ subroutine compute_wind_u(u, x, y, t, test_case)
    real(R_GRID), intent(OUT) :: u
    real(R_GRID), intent(IN)  :: x, y, t
    integer, intent(IN) :: test_case
-   real(R_GRID) :: c, Lx, Ly, Tf, arg1, arg2, arg3, x1, y1, Ubar
-   real(R_GRID) :: u0, u1
+   real(R_GRID) :: c, Lx, Ly, Tf, arg1, arg2, arg3, x1, y1, phi_hat
+   real(R_GRID) :: u0, u1, t1
 
-   Tf = 12.d0*day2sec
-   Tf = 5.d0
    select case (test_case)
       case(1,2)
          !u = 2d0*pi*erad/Tf
          u = 0.2d0
+         Tf = 12.d0*day2sec
+         !u = u*(5.d0/Tf)
 
       case(3)
+         Tf = 5.d0
          Lx = twopi
          Ly = pi
 
-         c = (10.d0/Tf)*(Lx/twopi)**2
+         phi_hat = 10.d0
+         c = (phi_hat/Tf)*(Lx/twopi)**2
 
-         x1 = x*eradi/twopi
-         y1 = y*eradi/twopi
+         x1 = -pi + twopi*x
+         y1 = -pio2 + pi*y
 
-         x1 = -pi + twopi*x1
-         y1 = -pio2 + pi*y1
+         !t1 = t/(12.d0*day2sec)*5.d0
+         t1 = t
 
-         arg1 = twopi*(x1/Lx - t/Tf)
+         arg1 = twopi*(x1/Lx - t1/Tf)
          arg2 = pi*y1/Ly
-         arg3 = pi*t/Tf
+         arg3 = pi*t1/Tf
 
          u = dsin(arg1)**2
          u = u*2.d0
@@ -179,19 +183,13 @@ subroutine compute_wind_u(u, x, y, t, test_case)
          u = u*dcos(arg3)
          u = u*c
          u = u*pi/Ly
-         u = u/twopi
          u = u-Lx/Tf
-         u = -u*erad
+         u = -u/twopi
+         !Tf = 12.d0*day2sec
+         !u = u*(5.d0/Tf)
 
       case(4)
-         !Ubar = (2.d0*pi*erad)/Tf
-         !u = -Ubar*(dsin((x+pi)/2.d0)**2)*(dsin(y))*(dcos(y*0.5d0)**2)*(dcos(pi*t/Tf))
-         c = 2d0*pi*erad/Tf
-         u0 = c
-         u1 = c
-         x1 = x/(2d0*pi*erad)
-         y1 = y/(2d0*pi*erad)
-         u = u0*dsin(pi*(x1-t/Tf))**2*dcos(pi*t/Tf) + u1
+         u = -dsin(pi*x)**2*sin(twopi*y)*cos(pi*t/Tf)
       case default
          print*, 'error in compute_wind: invalid testcase, ', test_case
          stop
@@ -202,31 +200,34 @@ subroutine compute_wind_v(v, x, y, t, test_case)
    real(R_GRID), intent(OUT) :: v
    real(R_GRID), intent(IN)  :: x, y, t
    integer, intent(IN) :: test_case
-   real(R_GRID) :: c, Lx, Ly, Tf, arg1, arg2, arg3, x1, y1, Ubar
-   real(R_GRID) :: u0, u1
+   real(R_GRID) :: c, Lx, Ly, Tf, arg1, arg2, arg3, x1, y1, phi_hat
+   real(R_GRID) :: u0, u1, t1
 
    Tf = 12.d0*day2sec
-   Tf = 5.d0
    select case (test_case)
       case(1,2)
-         v  = 2d0*pi*erad/Tf
+         !v  = 2d0*pi*erad/Tf
          v = 0.2d0
+         !v = v*(5.d0/Tf)
 
       case(3)
+         Tf = 5.d0
          Lx = twopi
          Ly = pi
 
-         c = (10.d0/Tf)*(Lx/twopi)**2
 
-         x1 = x*eradi/twopi
-         y1 = y*eradi/twopi
+         phi_hat = 10.d0
+         c = (phi_hat/Tf)*(Lx/twopi)**2
 
-         x1 = -pi + twopi*x1
-         y1 = -pio2 + pi*y1
+         x1 = -pi + twopi*x
+         y1 = -pio2 + pi*y
 
-         arg1 = twopi*(x1/Lx - t/Tf)
+         !t1 = t/(12.d0*day2sec)*5.d0
+         t1 = t
+
+         arg1 = twopi*(x1/Lx - t1/Tf)
          arg2 = pi*y1/Ly
-         arg3 = pi*t/Tf
+         arg3 = pi*t1/Tf
 
          v = 2.d0
          v = v*dsin(arg1)
@@ -234,19 +235,14 @@ subroutine compute_wind_v(v, x, y, t, test_case)
          v = v*dcos(arg2)**2
          v = v*dcos(arg3)
          v = v*c
-         v = v*twopi/Ly
+         v = v*twopi/Lx
          v = -v/pi
-         v = v*erad
+
+         !Tf = 12.d0*day2sec
+         !v = v*(5.d0/Tf)
 
       case(4)
-         !Ubar = (2.d0*pi*erad)/Tf
-         !v = (Ubar/2.d0)*(dsin((x+pi)))*(dcos(y/2.d0)**3)*(dcos(pi*t/Tf))
-         c = 2d0*pi*erad/Tf
-         u0 = c
-         u1 = c
-         x1 = x/(2d0*pi*erad)
-         y1 = y/(2d0*pi*erad)
-         v = u0*dsin(pi*(y1-t/Tf))**2*dcos(pi*t/Tf) + u1
+         v = -dsin(pi*y)**2*dsin(twopi*x)*dcos(pi*t/Tf)
 
       case default
          print*, 'error in compute_wind: invalid testcase, ', test_case
