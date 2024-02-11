@@ -231,7 +231,7 @@ subroutine atmosphere_input(atm)
     print*,"nplots     :", atm%nplots
 
     ! Time vars
-    atm%Tf   = 12.d0 * day2sec
+    !atm%Tf   = 12.d0 * day2sec
     atm%Tf   = 5.d0
     atm%dto2 = atm%dt*0.5d0
     atm%total_tsteps  = int(atm%Tf/atm%dt)

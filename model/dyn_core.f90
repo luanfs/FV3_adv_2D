@@ -20,10 +20,10 @@ subroutine dy_core(qa, uc, uc_old, vc_old, vc, bd, gridstruct, time, time_center
    real(R_GRID), intent(in) :: time_centered
    real(R_GRID), intent(inout) :: lim_fac
    real(R_GRID), intent(inout) :: qa(bd%isd:bd%ied, bd%jsd:bd%jed)
-   real(R_GRID), intent(inout) :: uc    (bd%isd:bd%ied  , bd%jsd:bd%jed+1)
-   real(R_GRID), intent(inout) :: uc_old(bd%isd:bd%ied  , bd%jsd:bd%jed+1)
-   real(R_GRID), intent(inout) :: vc    (bd%isd:bd%ied+1, bd%jsd:bd%jed  )
-   real(R_GRID), intent(inout) :: vc_old(bd%isd:bd%ied+1, bd%jsd:bd%jed  )
+   real(R_GRID), intent(inout) :: uc    (bd%isd:bd%ied+1  , bd%jsd:bd%jed)
+   real(R_GRID), intent(inout) :: uc_old(bd%isd:bd%ied+1  , bd%jsd:bd%jed)
+   real(R_GRID), intent(inout) :: vc    (bd%isd:bd%ied, bd%jsd:bd%jed+1  )
+   real(R_GRID), intent(inout) :: vc_old(bd%isd:bd%ied, bd%jsd:bd%jed+1  )
  
    integer, intent(IN) :: test_case
    integer, intent(IN) :: hord
@@ -78,6 +78,7 @@ subroutine dy_core(qa, uc, uc_old, vc_old, vc, bd, gridstruct, time, time_center
    ! winds
    call calc_winds(uc_old, vc_old, bd, gridstruct, time         , test_case)
    call calc_winds(uc    , vc    , bd, gridstruct, time_centered, test_case)
+
    ! periodic BC
    call ext_scalar_agrid(qa, bd)
    call ext_scalar_cgrid(uc    , vc    , bd)
