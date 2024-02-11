@@ -102,11 +102,11 @@ subroutine init_grid(gridstruct, bd)
    agrid(isd:ied, jsd:jed)%y = (bgrid(isd+1:ied+1, jsd+1:jed+1)%y + bgrid(isd:ied    , jsd:jed)%y + &
                                 bgrid(isd  :ied  , jsd+1:jed+1)%y + bgrid(isd+1:ied+1, jsd:jed)%y)* 0.25d0
 
-   cgrid(isd:ied+1, jsd:jed)%x = (bgrid(isd+1:ied+1, jsd:jed)%x + bgrid(isd:ied,jsd:jed)%x)*0.5d0
-   cgrid(isd:ied+1, jsd:jed)%y = (bgrid(isd+1:ied+1, jsd:jed)%y + bgrid(isd:ied,jsd:jed)%y)*0.5d0
+   cgrid(isd:ied+1, jsd:jed)%x = bgrid(isd:ied+1, jsd:jed)%x
+   cgrid(isd:ied+1, jsd:jed)%y = (bgrid(isd:ied, jsd+1:jed+1)%y+bgrid(isd:ied, jsd:jed)%y)*0.5d0
 
-   dgrid(isd:ied, jsd:jed+1)%x = (bgrid(isd:ied, jsd+1:jed+1)%x + bgrid(isd:ied,jsd:jed)%x)*0.5d0
-   dgrid(isd:ied, jsd:jed+1)%y = (bgrid(isd:ied, jsd+1:jed+1)%y + bgrid(isd:ied,jsd:jed)%y)*0.5d0
+   dgrid(isd:ied, jsd:jed)%x   = (bgrid(isd+1:ied+1, jsd:jed)%x + bgrid(isd:ied,jsd:jed)%x)*0.5d0
+   dgrid(isd:ied, jsd:jed+1)%y =  bgrid(isd:ied, jsd:jed+1)%y
 
 end subroutine init_grid
 
