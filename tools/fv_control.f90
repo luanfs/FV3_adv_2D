@@ -118,7 +118,7 @@ subroutine init_atmos(atm)
    integer :: is, ie, isd, ied
    integer :: js, je, jsd, jed
    integer :: i
-   character (len=60):: n, tc, hord, dp
+   character (len=60):: n, tc, hord, adv_scheme
    is  = atm%bd%is
    js  = atm%bd%js
    isd = atm%bd%isd
@@ -133,9 +133,9 @@ subroutine init_atmos(atm)
    write(n   ,'(i8)') atm%npx
    write(tc  ,'(i8)') atm%test_case
    write(hord,'(i8)') atm%hord
-   write(dp  ,'(i8)') atm%dp
+   write(adv_scheme ,'(i8)') atm%adv_scheme
    atm%simulation_name = "tc"//trim(adjustl(tc))//"_N"//trim(adjustl(n))//"_hord"//&
-   trim(adjustl(hord))//"_dp"//trim(adjustl(dp))//"_"
+   trim(adjustl(hord))//"_adv"//trim(adjustl(adv_scheme))//"_"
 
    allocate(atm%qa (isd:ied,jsd:jed))
    allocate(atm%qa0(isd:ied,jsd:jed))
@@ -146,8 +146,29 @@ subroutine init_atmos(atm)
    allocate(atm%vc (isd:ied  ,jsd:jed+1))
    allocate(atm%vc0(isd:ied,  jsd:jed+1))
 
-
    allocate(atm%error_qa(is:ie,js:je))
+
+   select case (atm%adv_scheme)
+   case(1)
+      atm%inner_dp  = 1
+      atm%outer_dp  = 1
+      atm%inner_adv = 1
+
+   case(2)
+      atm%inner_dp  = 2
+      atm%outer_dp  = 2
+      atm%inner_adv = 1
+ 
+   case(3)
+      atm%inner_dp  = 2
+      atm%outer_dp  = 2
+      atm%inner_adv = 2
+ 
+   case default
+      print*, 'Error in init_atmos: invalid adv_scheme'
+      stop
+   end select
+
 end subroutine init_atmos
 
 

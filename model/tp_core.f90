@@ -52,9 +52,10 @@ use fv_arrays, only: fv_grid_type, fv_grid_bounds_type, R_GRID
 contains
  subroutine fv_tp_2d(q, outer_crx, outer_cry, inner_crx, inner_cry, hord, fx, fy, &
                      outer_xfx, outer_yfx, inner_xfx, inner_yfx, &
-                     gridstruct, bd, ra_x, ra_y, lim_fac)
+                     gridstruct, bd, ra_x, ra_y, lim_fac, inner_adv)
    type(fv_grid_bounds_type), intent(IN) :: bd
    integer, intent(in)::hord
+   integer, intent(in)::inner_adv
 
    real(R_GRID), intent(in)::  outer_crx(bd%is:bd%ie+1,bd%jsd:bd%jed)  !
    real(R_GRID), intent(in)::  inner_crx(bd%is:bd%ie+1,bd%jsd:bd%jed)  !
@@ -109,13 +110,20 @@ contains
       enddo
    enddo
 
-   do j=js,je
-      do i=isd,ied
-         q_i(i,j) = (q(i,j)*gridstruct%area(i,j) + fyy(i,j)-fyy(i,j+1))/ra_y(i,j)
-         !q_i(i,j) = q(i,j) -(fyy(i,j+1)-fyy(i,j))*gridstruct%rarea(i,j)
+   ! inner advection
+   if(inner_adv==1) then
+      do j=js,je
+         do i=isd,ied
+            q_i(i,j) = (q(i,j)*gridstruct%area(i,j) + fyy(i,j)-fyy(i,j+1))/ra_y(i,j)
+         enddo
       enddo
-   enddo
-
+   else if(inner_adv==2) then
+      do j=js,je
+         do i=isd,ied
+            q_i(i,j) = q(i,j) -(fyy(i,j+1)-fyy(i,j))*gridstruct%rarea(i,j)
+         enddo
+      enddo
+   endif
    call xppm(fx, q_i, outer_crx, hord, is,ie,isd,ied, js,je,jsd,jed, lim_fac)
 
 
@@ -128,12 +136,20 @@ contains
       enddo
    enddo 
 
-   do j=jsd,jed
-      do i=is,ie
-         q_j(i,j) = (q(i,j)*gridstruct%area(i,j) + fxx(i,j)-fxx(i+1,j))/ra_x(i,j)
-         !q_j(i,j) = q(i,j)-(fxx(i+1,j)-fxx(i,j))*gridstruct%rarea(i,j)
+   ! inner adv
+   if(inner_adv==1) then
+      do j=jsd,jed
+         do i=is,ie
+            q_j(i,j) = (q(i,j)*gridstruct%area(i,j) + fxx(i,j)-fxx(i+1,j))/ra_x(i,j)
+         enddo
       enddo
-   Enddo
+   else if(inner_adv==2) then
+      do j=jsd,jed
+         do i=is,ie
+            q_j(i,j) = q(i,j)-(fxx(i+1,j)-fxx(i,j))*gridstruct%rarea(i,j)
+         enddo
+      enddo
+   endif 
 
    call yppm(fy, q_j, outer_cry, hord, is,ie,isd,ied, js,je,jsd,jed, lim_fac)
 

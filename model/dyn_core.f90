@@ -13,7 +13,8 @@ use fv_duogrid, only: ext_scalar_agrid, ext_scalar_cgrid
 implicit none
 
 contains
-subroutine dy_core(qa, uc, uc_old, vc_old, vc, bd, gridstruct, time, time_centered, dt, dto2, test_case, hord, lim_fac, dp)
+subroutine dy_core(qa, uc, uc_old, vc_old, vc, bd, gridstruct, time, time_centered, dt, dto2, test_case, hord, lim_fac, &
+                   inner_dp, outer_dp, adv_scheme)
    type(fv_grid_bounds_type), intent(INOUT) :: bd
    type(fv_grid_type), target, intent(INOUT) :: gridstruct
    real(R_GRID), intent(in) :: time, dt, dto2
@@ -27,7 +28,9 @@ subroutine dy_core(qa, uc, uc_old, vc_old, vc, bd, gridstruct, time, time_center
  
    integer, intent(IN) :: test_case
    integer, intent(IN) :: hord
-   integer, intent(IN) :: dp
+   integer, intent(IN) :: inner_dp
+   integer, intent(IN) :: outer_dp
+   integer, intent(IN) :: adv_scheme
 
    real(R_GRID) :: dx
    real(R_GRID) :: dy
@@ -55,10 +58,6 @@ subroutine dy_core(qa, uc, uc_old, vc_old, vc, bd, gridstruct, time, time_center
    integer :: is, ie, isd, ied, ng
    integer :: js, je, jsd, jed
    integer :: i, j
-   integer :: inner_dp, outer_dp
-
-   inner_dp = dp
-   outer_dp = dp
 
    is  = bd%is
    ie  = bd%ie
@@ -97,7 +96,7 @@ subroutine dy_core(qa, uc, uc_old, vc_old, vc, bd, gridstruct, time, time_center
    call compute_ra_x_and_ra_y(ra_x, ra_y, inner_xfx, inner_yfx, inner_crx, inner_cry, gridstruct, bd)
 
    call fv_tp_2d(qa, outer_crx, outer_cry, inner_crx, inner_cry, hord, flux_x, flux_y, &
-                     outer_xfx, outer_yfx, inner_xfx, inner_yfx, gridstruct, bd, ra_x, ra_y, lim_fac)
+                     outer_xfx, outer_yfx, inner_xfx, inner_yfx, gridstruct, bd, ra_x, ra_y, lim_fac, adv_scheme)
 
    ! compute the divergence
    div(is:ie,js:je) =  (flux_x(is+1:ie+1,js:je)-flux_x(is:ie,js:je))+ &

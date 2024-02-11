@@ -15,29 +15,34 @@ figformat = 'png'
 program = "./main"
 
 # test case
-tc = 3
+tc = 4
 
 # advection scheme
 hords = (8, 8, 0, 0)
+hords = (0,0,0,8,8,8)
+hords = (0,0,0)
 
-# departure point scheme
-dps = (1, 2, 1, 2)
+# adv scheme
+advs = (1, 2, 1, 2)
+advs = (1,2,3,1,2,3)
 
 # N
 N = 48
 Ns=[]
 
 # time step for N
-if tc==1 or tc==2 or tc==3:
-  dt = 14400
-elif tc==4:
+if tc==1 or tc==2:
+  dt = 20000
+elif tc==3:
   dt = 7200
+elif tc==4:
+  dt = 14400
 else:
   print('invalid TC')
   exit()
 
 # number of grids
-ngrids = 3
+ngrids = 2
 
 # aux routine
 def replace_line(filename, content, line_number):
@@ -63,28 +68,28 @@ def replace_line(filename, content, line_number):
         exit()
  
 # error arrays
-errors_linf = np.zeros((ngrids, len(dps)))
-errors_l1   = np.zeros((ngrids, len(dps)))
-errors_l2   = np.zeros((ngrids, len(dps)))
+errors_linf = np.zeros((ngrids, len(advs)))
+errors_l1   = np.zeros((ngrids, len(advs)))
+errors_l2   = np.zeros((ngrids, len(advs)))
 # compile the code
 subprocess.run('cd .. ; make', shell=True)
 parfile = pardir+'input.par'
 for n in range(0, ngrids):
-   for k in range(0, len(dps)):
-      dp   = dps[k]
+   for k in range(0, len(hords)):
+      adv  = advs[k]
       hord = hords[k]
       # update parameters
       replace_line(parfile, str(tc)  , 3)
       replace_line(parfile, str(N)   , 5)
       replace_line(parfile, str(dt)  , 7)
       replace_line(parfile, str(hord), 9)
-      replace_line(parfile, str(dp)  , 11)
+      replace_line(parfile, str(adv)  , 11)
 
       # Run the program
       subprocess.run('cd .. ; ./main ', shell=True)
 
       # error filename
-      filename = "tc"+str(tc)+"_N"+str(N)+"_hord"+str(hord)+"_dp"+str(dp)+"_errors.txt"
+      filename = "tc"+str(tc)+"_N"+str(N)+"_hord"+str(hord)+"_adv"+str(adv)+"_errors.txt"
    
       # load the errors
       errors = np.loadtxt(datadir+filename)
@@ -99,9 +104,10 @@ for n in range(0, ngrids):
    
  
 # Plotting parameters
-colors = ('green', 'green', 'red', 'red')
+colors = ('green', 'red', 'blue', 'green', 'red', 'blue')
 markers = ('*','+','x','*', '+', 'x', '*', '+')
 lines_style = ('-','--','-','--')
+lines_style = ('-','-','-','--','--','--')
 
 # Plot error graph 
 errors = [errors_linf, errors_l1, errors_l2]
@@ -109,9 +115,16 @@ names = [r'$L_{\infty}$',r'$L_1$',r'$L_2$']
 enames = ['linf','l1','l2']
 for e in range(0, len(errors)):
    error = errors[e]
-   for m in range(0, len(dps)):
+   for m in range(0, len(hords)):
       hord = hords[m]
-      dp = dps[m]
+      adv = advs[m]
+
+      if adv==1:
+      	scheme='inner1-dp1'
+      elif adv==2:
+        scheme='inner1-dp2'
+      elif adv==3:
+        scheme='inner2-dp2'
 
       # convergence rate
       n = len(Ns)-1
@@ -120,7 +133,7 @@ for e in range(0, len(errors)):
 
       # plot
       plt.loglog(Ns, error[:,m], lines_style[m], color=colors[m], marker=markers[m],\
-      label = 'hord'+str(hord)+'-dp'+str(dp)+" - order "+CR)
+      label = 'hord'+str(hord)+'-'+str(scheme)+" - order "+CR)
 
    # Label
    title =names[e]+" error - TC"+str(tc)

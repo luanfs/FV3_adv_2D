@@ -70,7 +70,10 @@ type fv_atmos_type
    type(fv_grid_bounds_type) :: bd
    integer  :: test_case
    integer  :: hord
-   integer  :: dp
+   integer  :: adv_scheme
+   integer  :: inner_dp
+   integer  :: outer_dp
+   integer  :: inner_adv
    integer  :: nplot = 0
    integer  :: nplots
    integer  :: plotstep

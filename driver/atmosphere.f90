@@ -83,7 +83,7 @@ subroutine atmosphere_timestep(atm)
 
    ! solves dynamics
    call dy_core(atm%qa, atm%uc, atm%uc_old, atm%vc, atm%vc_old, atm%bd, atm%gridstruct, atm%time, atm%time_centered,&
-                   atm%dt, atm%dto2, atm%test_case, atm%hord, atm%lim_fac, atm%dp)
+                   atm%dt, atm%dto2, atm%test_case, atm%hord, atm%lim_fac, atm%inner_dp, atm%outer_dp, atm%inner_adv)
 
    ! update times
    atm%time          = atm%time + atm%dt
@@ -218,7 +218,7 @@ subroutine atmosphere_input(atm)
     read(fileunit,*)  buffer
     read(fileunit,*)  atm%hord
     read(fileunit,*)  buffer
-    read(fileunit,*)  atm%dp
+    read(fileunit,*)  atm%adv_scheme
     read(fileunit,*)  buffer
     read(fileunit,*)  atm%nplots
     close(fileunit)
@@ -227,12 +227,11 @@ subroutine atmosphere_input(atm)
     print*,"npx        :", atm%npx
     print*,"dt         :", atm%dt
     print*,"hord       :", atm%hord
-    print*,"dp         :", atm%dp
+    print*,"adv_scheme :", atm%adv_scheme
     print*,"nplots     :", atm%nplots
 
     ! Time vars
-    !atm%Tf   = 12.d0 * day2sec
-    atm%Tf   = 5.d0
+    atm%Tf   = 12.d0 * day2sec
     atm%dto2 = atm%dt*0.5d0
     atm%total_tsteps  = int(atm%Tf/atm%dt)
     atm%plotstep = atm%total_tsteps/atm%nplots

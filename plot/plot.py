@@ -9,11 +9,11 @@ datadir  ='../data/' # must exist
 figformat = 'png'
 
 # some constants
-N    = 48 # number of cells
-tc   = 1  # test case
-hord = 0  # advection schemes
-dp   = 2  # departure point schemes
-nplots = 5
+N    = 96 # number of cells
+tc   = 4  # test case
+hord = 0  # 1d adv scheme
+adv   = 1  #2d adv scheme
+nplots = 12
 
 
 # x axis points for plotting
@@ -26,11 +26,11 @@ if tc == 1 or tc == 2 or tc == 3:
    qmax =  1.2
 elif tc == 4:
    qmin = -0.1
-   qmax =  5
+   qmax =  3.3
 
 for t in range(0, nplots+1):
    # basename for plotting
-   basename = "tc"+str(tc)+"_N"+str(N)+"_hord"+str(hord)+"_dp"+str(dp)+"_t"
+   basename = "tc"+str(tc)+"_N"+str(N)+"_hord"+str(hord)+"_adv"+str(adv)+"_t"
    input_name  = datadir+basename+str(t)+'.txt'
    output_name = graphdir+basename+str(t)+'.'+figformat
    data = np.loadtxt(input_name)
@@ -39,7 +39,7 @@ for t in range(0, nplots+1):
    z = data[3:]
    z = np.reshape(z, (N,N))
    print(np.amin(z), np.amax(z))
-   plt.contourf(x, y, z, cmap='jet', levels=np.linspace(qmin,qmax,40))
+   plt.contourf(x, y, z, cmap='jet', levels=np.linspace(qmin,qmax,20))
    plt.colorbar(orientation='vertical', fraction=0.046, pad=0.04, format='%.1e')
 
    time = data[0]
