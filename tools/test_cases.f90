@@ -156,7 +156,7 @@ subroutine compute_wind_u(u, x, y, t, test_case)
          !u = 2d0*pi*erad/Tf
          u = 0.2d0
          Tf = 12.d0*day2sec
-         !u = u*(5.d0/Tf)
+         u = u*(5.d0/Tf)
 
       case(3)
          Tf = 5.d0
@@ -169,8 +169,8 @@ subroutine compute_wind_u(u, x, y, t, test_case)
          x1 = -pi + twopi*x
          y1 = -pio2 + pi*y
 
-         !t1 = t/(12.d0*day2sec)*5.d0
-         t1 = t
+         t1 = t/(12.d0*day2sec)*5.d0
+         !t1 = t
 
          arg1 = twopi*(x1/Lx - t1/Tf)
          arg2 = pi*y1/Ly
@@ -185,11 +185,15 @@ subroutine compute_wind_u(u, x, y, t, test_case)
          u = u*pi/Ly
          u = u-Lx/Tf
          u = -u/twopi
-         !Tf = 12.d0*day2sec
-         !u = u*(5.d0/Tf)
+         Tf = 12.d0*day2sec
+         u = u*(5.d0/Tf)
 
       case(4)
-         u = -dsin(pi*x)**2*sin(twopi*y)*cos(pi*t/Tf)
+         Tf = 5.d0
+         t1 = t/(12.d0*day2sec)*5.d0
+         u =  dsin(pi*x)**2*sin(twopi*y)*cos(pi*t1/Tf)
+         Tf = 12.d0*day2sec
+         u = 0.2*u*(5.d0/Tf)
       case default
          print*, 'error in compute_wind: invalid testcase, ', test_case
          stop
@@ -203,12 +207,12 @@ subroutine compute_wind_v(v, x, y, t, test_case)
    real(R_GRID) :: c, Lx, Ly, Tf, arg1, arg2, arg3, x1, y1, phi_hat
    real(R_GRID) :: u0, u1, t1
 
-   Tf = 12.d0*day2sec
    select case (test_case)
       case(1,2)
          !v  = 2d0*pi*erad/Tf
          v = 0.2d0
-         !v = v*(5.d0/Tf)
+         Tf = 12.d0*day2sec
+         v = v*(5.d0/Tf)
 
       case(3)
          Tf = 5.d0
@@ -222,8 +226,8 @@ subroutine compute_wind_v(v, x, y, t, test_case)
          x1 = -pi + twopi*x
          y1 = -pio2 + pi*y
 
-         !t1 = t/(12.d0*day2sec)*5.d0
-         t1 = t
+         t1 = t/(12.d0*day2sec)*5.d0
+         !t1 = t
 
          arg1 = twopi*(x1/Lx - t1/Tf)
          arg2 = pi*y1/Ly
@@ -238,11 +242,15 @@ subroutine compute_wind_v(v, x, y, t, test_case)
          v = v*twopi/Lx
          v = -v/pi
 
-         !Tf = 12.d0*day2sec
-         !v = v*(5.d0/Tf)
+         Tf = 12.d0*day2sec
+         v = v*(5.d0/Tf)
 
       case(4)
-         v = -dsin(pi*y)**2*dsin(twopi*x)*dcos(pi*t/Tf)
+         Tf = 5.d0
+         t1 = t/(12.d0*day2sec)*5.d0
+         v = dsin(pi*y)**2*dsin(twopi*x)*dcos(pi*t1/Tf)
+         Tf = 12.d0*day2sec
+         v = 0.2*v*(5.d0/Tf)
 
       case default
          print*, 'error in compute_wind: invalid testcase, ', test_case
