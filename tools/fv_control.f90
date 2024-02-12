@@ -79,10 +79,10 @@ subroutine init_grid(gridstruct, bd)
    dx    => gridstruct%dx
    dy    => gridstruct%dy
 
-   !dx = 2.d0*pi*erad/bd%npx
-   !dy = 2.d0*pi*erad/bd%npy
-   dx = 1.d0/bd%npx
-   dy = 1.d0/bd%npy
+   dx = 2.d0*pi*erad/bd%npx
+   dy = 2.d0*pi*erad/bd%npy
+   !dx = 1.d0/bd%npx
+   !dy = 1.d0/bd%npy
  
    area = dx*dy
    rarea = 1.d0/area

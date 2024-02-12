@@ -49,7 +49,6 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
             x = agrid(i,j)%x
             y = agrid(i,j)%y
             c = 2d0*pi*erad
-            c = 1.d0!2d0*pi*erad
             if (x<=0.4*c .or. x>=0.6d0*c .or. y<=0.4*c .or. y>=0.6d0*c) then
                qa(i,j) = 0.d0
             else
@@ -61,16 +60,16 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
    else if (test_case==2) then
       do i = is, ie
          do j = js, je
-            x = agrid(i,j)%x
-            y = agrid(i,j)%y
-            qa(i,j) = 0.d0 + 1.d0* dexp(-10*(dcos(x*pi))**2)*dexp(-10*(dcos(y*pi))**2)
+            x = agrid(i,j)%x*eradi/twopi
+            y = agrid(i,j)%y*eradi/twopi
+            qa(i,j) = 0.d0 + 1.d0* dexp(-10*(dcos(pi*x))**2)*dexp(-10*(dcos(pi*y))**2)
          enddo
       enddo
    else if (test_case==3 .or. test_case==4) then
       do i = is, ie
          do j = js, je
-            x = agrid(i,j)%x
-            y = agrid(i,j)%y
+            x = agrid(i,j)%x*eradi/twopi
+            y = agrid(i,j)%y*eradi/twopi
             z1 = dexp(-10.d0*(dcos(pi*(x-0.1)))**2)
             z1 = z1*dexp(-10.d0*(dcos(pi*y))**2)
             z2 = dexp(-10.d0*(dcos(pi*(x+0.1)))**2)
@@ -153,10 +152,8 @@ subroutine compute_wind_u(u, x, y, t, test_case)
 
    select case (test_case)
       case(1,2)
-         !u = 2d0*pi*erad/Tf
-         u = 0.2d0
          Tf = 12.d0*day2sec
-         u = u*(5.d0/Tf)
+         u = 2d0*pi*erad/Tf
 
       case(3)
          Tf = 5.d0
@@ -166,8 +163,10 @@ subroutine compute_wind_u(u, x, y, t, test_case)
          phi_hat = 10.d0
          c = (phi_hat/Tf)*(Lx/twopi)**2
 
-         x1 = -pi + twopi*x
-         y1 = -pio2 + pi*y
+         x1 = x*eradi/twopi
+         y1 = y*eradi/twopi
+         x1 = -pi + twopi*x1
+         y1 = -pio2 + pi*y1
 
          t1 = t/(12.d0*day2sec)*5.d0
          !t1 = t
@@ -187,13 +186,13 @@ subroutine compute_wind_u(u, x, y, t, test_case)
          u = -u/twopi
          Tf = 12.d0*day2sec
          u = u*(5.d0/Tf)
+         u = u*twopi*erad
 
       case(4)
-         Tf = 5.d0
-         t1 = t/(12.d0*day2sec)*5.d0
-         u =  dsin(pi*x)**2*sin(twopi*y)*cos(pi*t1/Tf)
          Tf = 12.d0*day2sec
-         u = 0.2*u*(5.d0/Tf)
+         u =  dsin(x*0.5d0*eradi)**2*sin(y*eradi)*cos(pi*t/Tf)
+         u = u/Tf
+         u = u*twopi*erad
       case default
          print*, 'error in compute_wind: invalid testcase, ', test_case
          stop
@@ -209,10 +208,8 @@ subroutine compute_wind_v(v, x, y, t, test_case)
 
    select case (test_case)
       case(1,2)
-         !v  = 2d0*pi*erad/Tf
-         v = 0.2d0
          Tf = 12.d0*day2sec
-         v = v*(5.d0/Tf)
+         v  = 2d0*pi*erad/Tf
 
       case(3)
          Tf = 5.d0
@@ -223,8 +220,10 @@ subroutine compute_wind_v(v, x, y, t, test_case)
          phi_hat = 10.d0
          c = (phi_hat/Tf)*(Lx/twopi)**2
 
-         x1 = -pi + twopi*x
-         y1 = -pio2 + pi*y
+         x1 = x*eradi/twopi
+         y1 = y*eradi/twopi 
+         x1 = -pi + twopi*x1
+         y1 = -pio2 + pi*y1
 
          t1 = t/(12.d0*day2sec)*5.d0
          !t1 = t
@@ -244,13 +243,13 @@ subroutine compute_wind_v(v, x, y, t, test_case)
 
          Tf = 12.d0*day2sec
          v = v*(5.d0/Tf)
+         v = v*twopi*erad
 
       case(4)
-         Tf = 5.d0
-         t1 = t/(12.d0*day2sec)*5.d0
-         v = dsin(pi*y)**2*dsin(twopi*x)*dcos(pi*t1/Tf)
          Tf = 12.d0*day2sec
-         v = 0.2*v*(5.d0/Tf)
+         v = dsin(y*0.5d0*eradi)**2*dsin(x*eradi)*dcos(pi*t/Tf)
+         v = v/Tf
+         v = v*twopi*erad
 
       case default
          print*, 'error in compute_wind: invalid testcase, ', test_case
