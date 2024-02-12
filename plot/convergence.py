@@ -23,7 +23,7 @@ hords = (0,0,0,8,8,8)
 hords = (0,0,0)
 
 # adv scheme
-advs = (1, 2, 1, 2)
+advs = (1, 3, 1, 2)
 advs = (1,2,3,1,2,3)
 
 # N
@@ -42,7 +42,7 @@ else:
   exit()
 
 # number of grids
-ngrids = 2
+ngrids = 5
 
 # aux routine
 def replace_line(filename, content, line_number):
@@ -68,9 +68,10 @@ def replace_line(filename, content, line_number):
         exit()
  
 # error arrays
-errors_linf = np.zeros((ngrids, len(advs)))
-errors_l1   = np.zeros((ngrids, len(advs)))
-errors_l2   = np.zeros((ngrids, len(advs)))
+errors_linf = np.zeros((ngrids, len(hords)))
+errors_l1   = np.zeros((ngrids, len(hords)))
+errors_l2   = np.zeros((ngrids, len(hords)))
+
 # compile the code
 subprocess.run('cd .. ; make', shell=True)
 parfile = pardir+'input.par'
@@ -135,11 +136,23 @@ for e in range(0, len(errors)):
       plt.loglog(Ns, error[:,m], lines_style[m], color=colors[m], marker=markers[m],\
       label = 'hord'+str(hord)+'-'+str(scheme)+" - order "+CR)
 
+
+   # plot reference lines
+   eref = np.amin(error)
+
+   order1 = [eref, eref/2.0]
+   order2 = [eref, eref/4.0]
+   order3 = [eref, eref/8.0]
+   plt.loglog(Ns[ngrids-2:ngrids], order1, '-' , color='black', label = '1st order')
+   plt.loglog(Ns[ngrids-2:ngrids], order2, '--', color='black', label = '2nd order')
+   plt.loglog(Ns[ngrids-2:ngrids], order3, '-.', color='black', label = '3rd order')
+
    # Label
    title =names[e]+" error - TC"+str(tc)
    figname =  graphdir+'tc'+str(tc)+'_'+enames[e]+"_error"
    plt.xlabel('$N$')
    plt.ylabel('Error')
+   plt.xlim(0,1000)
    plt.title(title)
    plt.legend()
    plt.grid(True, which="both")
