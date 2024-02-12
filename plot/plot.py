@@ -16,9 +16,14 @@ adv   = 1  #2d adv scheme
 nplots = 12
 
 
+# Domain size
+erad = 6371.0 # earth radius (km)
+Lx = 2*np.pi*erad
+Ly = 2*np.pi*erad
+
 # x axis points for plotting
-x = np.linspace(0, 1, N)
-y = np.linspace(0, 1, N)
+x = np.linspace(0, Lx, N)
+y = np.linspace(0, Ly, N)
 x, y = np.meshgrid(x,y)
 
 if tc == 1 or tc == 2 or tc == 3:
@@ -38,7 +43,7 @@ for t in range(0, nplots+1):
    # plot the graph
    z = data[3:]
    z = np.reshape(z, (N,N))
-   print(np.amin(z), np.amax(z))
+   #print(np.amin(z), np.amax(z))
    plt.contourf(x, y, z, cmap='jet', levels=np.linspace(qmin,qmax,20))
    plt.colorbar(orientation='vertical', fraction=0.046, pad=0.04, format='%.1e')
 
@@ -52,8 +57,8 @@ for t in range(0, nplots+1):
    cfl = str("{:.2e}".format(cfl))
 
    # Label
-   plt.xlabel('$x$')
-   plt.ylabel('$y$')
+   plt.xlabel('$x$ (km)')
+   plt.ylabel('$y$ (km)')
    plt.grid(True, which="both")
    title = "N="+str(N)+", time = "+time+" days, CFL="+cfl#+", mass variation="+massvar  
    plt.title(title)
