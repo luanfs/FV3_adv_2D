@@ -59,7 +59,7 @@ subroutine atmosphere_init(atm)
    atm%cfl_x = maxval(abs(atm%uc0))*atm%dt/atm%gridstruct%dx
    atm%cfl_y = maxval(abs(atm%vc0))*atm%dt/atm%gridstruct%dy
    atm%cfl = max(atm%cfl_x, atm%cfl_y)
-   print*,"cfl        :", atm%cfl_x
+   print*,"cfl        :", atm%cfl
    print*,'------------------------------------------------------------------'
 
    ! update qa and uc
@@ -120,6 +120,7 @@ subroutine atmosphere_output(atm, step, total_tsteps)
       write(iunit,*) atm%time*sec2day
       write(iunit,*) atm%mass_qa_var
       write(iunit,*) atm%cfl
+
       do j = js, je
          do i = is, ie
             write(iunit,*) atm%qa(i,j)
@@ -218,7 +219,9 @@ subroutine atmosphere_input(atm)
     read(fileunit,*)  buffer
     read(fileunit,*)  atm%hord
     read(fileunit,*)  buffer
-    read(fileunit,*)  atm%adv_scheme
+    read(fileunit,*)  atm%dp
+    read(fileunit,*)  buffer
+    read(fileunit,*)  atm%inner_adv
     read(fileunit,*)  buffer
     read(fileunit,*)  atm%nplots
     close(fileunit)
@@ -227,7 +230,8 @@ subroutine atmosphere_input(atm)
     print*,"npx        :", atm%npx
     print*,"dt         :", atm%dt
     print*,"hord       :", atm%hord
-    print*,"adv_scheme :", atm%adv_scheme
+    print*,"dp         :", atm%dp
+    print*,"inner_adv  :", atm%inner_adv
     print*,"nplots     :", atm%nplots
 
     ! Time vars

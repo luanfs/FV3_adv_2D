@@ -73,6 +73,7 @@ type fv_atmos_type
    integer  :: adv_scheme
    integer  :: inner_dp
    integer  :: outer_dp
+   integer  :: dp
    integer  :: inner_adv
    integer  :: nplot = 0
    integer  :: nplots
