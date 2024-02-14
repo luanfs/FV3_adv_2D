@@ -1,13 +1,15 @@
 #Advection test case parameters 
 #Test case
-3
+4
 # N (number of cells)
-192
+768
 #Time step
-1800.0
+900.0
 #hord scheme
-0
-#Departure point scheme (1 (rk1) or 2 (rk2))
+8
+#departure point (1 or 2)
+2
+#inner advection (1 or 2)
 2
 # Number of plots
 12
