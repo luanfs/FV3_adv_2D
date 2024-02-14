@@ -147,8 +147,7 @@ subroutine compute_wind_u(u, x, y, t, test_case)
    real(R_GRID), intent(OUT) :: u
    real(R_GRID), intent(IN)  :: x, y, t
    integer, intent(IN) :: test_case
-   real(R_GRID) :: c, Lx, Ly, Tf, arg1, arg2, arg3, x1, y1, phi_hat
-   real(R_GRID) :: u0, u1, t1, L
+   real(R_GRID) :: c, Tf, arg1, arg2, arg3, L
 
    select case (test_case)
       case(1,2)
@@ -156,42 +155,26 @@ subroutine compute_wind_u(u, x, y, t, test_case)
          u = 2d0*pi*erad/Tf
 
       case(3)
-         Tf = 5.d0
-         Lx = twopi
-         Ly = pi
+         Tf = 12.d0*day2sec
+         L = twopi*erad
+         c = 10.d0/pi
 
-         phi_hat = 10.d0
-         c = (phi_hat/Tf)*(Lx/twopi)**2
-
-         x1 = x*eradi/twopi
-         y1 = y*eradi/twopi
-         x1 = -pi + twopi*x1
-         y1 = -pio2 + pi*y1
-
-         t1 = t/(12.d0*day2sec)*5.d0
-         !t1 = t
-
-         arg1 = twopi*(x1/Lx - t1/Tf)
-         arg2 = pi*y1/Ly
-         arg3 = pi*t1/Tf
+         arg1 = twopi*(x/L-t/Tf)
+         arg2 = y*pi/L
+         arg3 = pi*t/Tf
 
          u = dsin(arg1)**2
-         u = u*2.d0
-         u = u*dcos(arg2)
          u = u*dsin(arg2)
+         u = u*dcos(arg2)
          u = u*dcos(arg3)
          u = u*c
-         u = u*pi/Ly
-         u = u-Lx/Tf
-         u = -u/twopi
-         Tf = 12.d0*day2sec
-         u = u*(5.d0/Tf)
-         u = u*twopi*erad
+         u = u*(L/Tf) + L/Tf
+
 
       case(4)
          Tf = 12.d0*day2sec
          L = twopi*erad
-         u =  dsin(pi*x/L)**2*sin(twopi*y/L)*cos(pi*t/Tf)
+         u = dsin(pi*x/L)**2*sin(twopi*y/L)*cos(pi*t/Tf)
          u = u/Tf
          u = u*L
       case default
@@ -204,8 +187,7 @@ subroutine compute_wind_v(v, x, y, t, test_case)
    real(R_GRID), intent(OUT) :: v
    real(R_GRID), intent(IN)  :: x, y, t
    integer, intent(IN) :: test_case
-   real(R_GRID) :: c, Lx, Ly, Tf, arg1, arg2, arg3, x1, y1, phi_hat
-   real(R_GRID) :: u0, u1, t1, L
+   real(R_GRID) :: c, Tf, arg1, arg2, arg3, L
 
    select case (test_case)
       case(1,2)
@@ -213,38 +195,21 @@ subroutine compute_wind_v(v, x, y, t, test_case)
          v  = 2d0*pi*erad/Tf
 
       case(3)
-         Tf = 5.d0
-         Lx = twopi
-         Ly = pi
+         Tf = 12.d0*day2sec
+         L = twopi*erad
+         c = 10.d0/pi
 
-
-         phi_hat = 10.d0
-         c = (phi_hat/Tf)*(Lx/twopi)**2
-
-         x1 = x*eradi/twopi
-         y1 = y*eradi/twopi 
-         x1 = -pi + twopi*x1
-         y1 = -pio2 + pi*y1
-
-         t1 = t/(12.d0*day2sec)*5.d0
-         !t1 = t
-
-         arg1 = twopi*(x1/Lx - t1/Tf)
-         arg2 = pi*y1/Ly
-         arg3 = pi*t1/Tf
+         arg1 = twopi*(x/L-t/Tf)
+         arg2 = pi*y/L
+         arg3 = pi*t/Tf
 
          v = 2.d0
          v = v*dsin(arg1)
          v = v*dcos(arg1)
-         v = v*dcos(arg2)**2
+         v = v*dsin(arg2)**2
          v = v*dcos(arg3)
-         v = v*c
-         v = v*twopi/Lx
-         v = -v/pi
-
-         Tf = 12.d0*day2sec
-         v = v*(5.d0/Tf)
-         v = v*twopi*erad
+         v = -v*c
+         v = v*(L/Tf)
 
       case(4)
          Tf = 12.d0*day2sec
