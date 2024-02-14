@@ -9,11 +9,12 @@ datadir  ='../data/' # must exist
 figformat = 'png'
 
 # some constants
-N    = 96 # number of cells
-tc   = 4  # test case
-hord = 0  # 1d adv scheme
-adv   = 1  #2d adv scheme
-nplots = 12
+N    = 48 # number of cells
+tc   = 1  # test case
+hord = 8 # 1d adv scheme
+dp   = 1  #2d adv scheme
+iadv = 1
+nplots = 13
 
 
 # Domain size
@@ -27,17 +28,17 @@ y = np.linspace(0, Ly, N)
 x, y = np.meshgrid(x,y)
 
 if tc == 1 or tc == 2 or tc == 3:
-   qmin = -0.1
-   qmax =  1.2
+   qmin = -0.2
+   qmax =  1.35
 elif tc == 4:
    qmin = -0.1
-   qmax =  3.3
+   qmax =  3.4
 
 for t in range(0, nplots+1):
    # basename for plotting
-   basename = "tc"+str(tc)+"_N"+str(N)+"_hord"+str(hord)+"_adv"+str(adv)+"_t"
+   basename = "tc"+str(tc)+"_N"+str(N)+"_hord"+str(hord)+"_iadv"+str(iadv)+"_dp"+str(dp)+"_t"
    input_name  = datadir+basename+str(t)+'.txt'
-   output_name = graphdir+basename+str(t)+'.'+figformat
+   output_name = graphdir+'adv2d_'+basename+str(t)+'.'+figformat
    data = np.loadtxt(input_name)
 
    # plot the graph
@@ -59,9 +60,11 @@ for t in range(0, nplots+1):
    # Label
    plt.xlabel('$x$ (km)')
    plt.ylabel('$y$ (km)')
+   plt.xlim(14000, 30000)
+   plt.ylim(14000, 30000)
    plt.grid(True, which="both")
    title = "N="+str(N)+", time = "+time+" days, CFL="+cfl#+", mass variation="+massvar  
    plt.title(title)
-   plt.savefig(output_name+'.'+figformat, format=figformat)
+   plt.savefig(output_name, format=figformat)
    plt.close()
    print("Plotted "+ output_name)
