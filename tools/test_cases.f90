@@ -30,7 +30,7 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
    type(fv_grid_bounds_type), intent(IN) :: bd
    type(point_structure), pointer, dimension(:,:) :: agrid
    real(R_GRID), intent(OUT) :: qa(bd%isd:bd%ied,bd%jsd:bd%jed)
-   real(R_GRID) :: x, y, c, z1, z2
+   real(R_GRID) :: x, y, c, z1, z2, L
    integer, intent(IN) :: test_case
    integer :: is, ie
    integer :: js, je
@@ -60,20 +60,22 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
    else if (test_case==2) then
       do i = is, ie
          do j = js, je
-            x = agrid(i,j)%x*eradi/twopi
-            y = agrid(i,j)%y*eradi/twopi
-            qa(i,j) = 0.d0 + 1.d0* dexp(-10*(dcos(pi*x))**2)*dexp(-10*(dcos(pi*y))**2)
+            L = twopi*erad
+            x = agrid(i,j)%x
+            y = agrid(i,j)%y
+            qa(i,j) = 0.d0 + 1.d0* dexp(-10*(dcos(pi*x/L))**2)*dexp(-10*(dcos(pi*y/L))**2)
          enddo
       enddo
    else if (test_case==3 .or. test_case==4) then
       do i = is, ie
          do j = js, je
-            x = agrid(i,j)%x*eradi/twopi
-            y = agrid(i,j)%y*eradi/twopi
-            z1 = dexp(-10.d0*(dcos(pi*(x-0.1)))**2)
-            z1 = z1*dexp(-10.d0*(dcos(pi*y))**2)
-            z2 = dexp(-10.d0*(dcos(pi*(x+0.1)))**2)
-            z2 = z2*dexp(-10.d0*(dcos(pi*y))**2)
+            L = twopi*erad
+            x = agrid(i,j)%x
+            y = agrid(i,j)%y
+            z1 = dexp(-10.d0*(dcos(pi*(x/L-0.1d0))**2))
+            z1 = z1*dexp(-10.d0*(dcos(pi*y/L))**2)
+            z2 = dexp(-10.d0*(dcos(pi*(x/L+0.1d0))**2))
+            z2 = z2*dexp(-10.d0*(dcos(pi*y/L))**2)
             qa(i,j) = z1+z2
          enddo
       enddo
@@ -169,7 +171,6 @@ subroutine compute_wind_u(u, x, y, t, test_case)
          u = u*dcos(arg3)
          u = u*c
          u = u*(L/Tf) + L/Tf
-
 
       case(4)
          Tf = 12.d0*day2sec
