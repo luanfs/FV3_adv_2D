@@ -9,29 +9,29 @@ datadir  ='../data/' # must exist
 figformat = 'png'
 
 # some constants
-N    = 48 # number of cells
-tc   = 1  # test case
+N    = 768 # number of cells
+tc   = 3  # test case
 hord = 8 # 1d adv scheme
 dp   = 1  #2d adv scheme
 iadv = 1
-nplots = 13
+nplots = 12
 
 
 # Domain size
 erad = 6371.0 # earth radius (km)
-Lx = 2*np.pi*erad
-Ly = 2*np.pi*erad
+Lx = 0.5*np.pi*erad
+Lxo2 = Lx*0.5
 
 # x axis points for plotting
-x = np.linspace(0, Lx, N)
-y = np.linspace(0, Ly, N)
+x = np.linspace(-Lxo2, Lxo2, N)
+y = np.linspace(-Lxo2, Lxo2, N)
 x, y = np.meshgrid(x,y)
 
 if tc == 1 or tc == 2 or tc == 3:
    qmin = -0.2
-   qmax =  1.35
+   qmax =  1.2
 elif tc == 4:
-   qmin = -0.1
+   qmin = -0.2
    qmax =  3.4
 
 for t in range(0, nplots+1):
@@ -57,13 +57,19 @@ for t in range(0, nplots+1):
    cfl = data[2]
    cfl = str("{:.2e}".format(cfl))
 
+   if iadv==1:
+      sp = 'PL'
+   elif iadv==2:
+      sp = 'AL'
    # Label
    plt.xlabel('$x$ (km)')
    plt.ylabel('$y$ (km)')
-   plt.xlim(14000, 30000)
-   plt.ylim(14000, 30000)
+   #plt.xlim(-2000, 2000)
+   #plt.ylim(-2000, 2000)
    plt.grid(True, which="both")
-   title = "N="+str(N)+", time = "+time+" days, CFL="+cfl#+", mass variation="+massvar  
+   title = "N="+str(N)+", time = "+time+" days, CFL="+cfl+ '\n'+ \
+   sp +'.hord'+str(hord)+'.dp'+str(dp)
+   #+", mass variation="+massvar  
    plt.title(title)
    plt.savefig(output_name, format=figformat)
    plt.close()

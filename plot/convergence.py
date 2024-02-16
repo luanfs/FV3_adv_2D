@@ -15,7 +15,7 @@ figformat = 'png'
 program = "./main"
 
 # test case
-tc = 4
+tc = 3
 
 # advection scheme
 hords = (0,8)
@@ -32,11 +32,11 @@ Ns=[]
 
 # run the program?
 run=True
-run=False
+#run=False
 
 # time step for N
 if tc==1 or tc==2:
-  dt = 20000
+  dt = 14400
 elif tc==3:
   dt = 5400
 elif tc==4:
@@ -137,7 +137,12 @@ for e in range(0, len(errors)):
       for k in range(0, len(dps)):
          iadv = iadvs[k]
          dp = dps[k]         
-         scheme='ia'+str(iadv)+'-dp'+str(dp)
+
+         if iadv==1:
+           sp = 'PL'
+         elif iadv==2:
+           sp = 'AL'
+         scheme = sp+'-dp'+str(dp)+'-hord'+str(hord)
 
          # convergence rate
          n = len(Ns)-1
@@ -175,5 +180,5 @@ for e in range(0, len(errors)):
       
    plt.tight_layout() 
    figname = graphdir + 'adv2d_tc' + str(tc) + '_' + enames[e] + "_error"
-   plt.savefig(figname, format=figformat)
+   plt.savefig(figname+'.'+figformat, format=figformat)
    plt.close()
