@@ -50,7 +50,7 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
             y = agrid(i,j)%y
             L = pio2*erad
             if (x<=-0.1*L .or. x>=0.1d0*L .or. y<=-0.1*L .or. y>=0.1d0*L) then
-               qa(i,j) = 0.d0
+               qa(i,j) = 0.1d0
             else
                qa(i,j) = 1.d0
             endif
@@ -63,7 +63,7 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
             L = pio2*erad
             x = agrid(i,j)%x
             y = agrid(i,j)%y
-            qa(i,j) = 0.d0 + 1.d0* dexp(-10*(dsin(pi*x/L))**2)*dexp(-10*(dsin(pi*y/L))**2)
+            qa(i,j) = 0.1d0 + 0.9d0* dexp(-10*(dsin(pi*x/L))**2)*dexp(-10*(dsin(pi*y/L))**2)
          enddo
       enddo
    else if (test_case==3 .or. test_case==4) then
@@ -76,7 +76,7 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
             z1 = z1*dexp(-10.d0*(dsin(pi*y/L))**2)
             z2 = dexp(-10.d0*(dsin(pi*(x/L+0.1d0))**2))
             z2 = z2*dexp(-10.d0*(dsin(pi*y/L))**2)
-            qa(i,j) = z1+z2
+            qa(i,j) = 0.1d0 + 0.9d0*(z1+z2)
          enddo
       enddo
    else

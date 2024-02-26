@@ -141,7 +141,7 @@ for e in range(0, len(errors)):
          if iadv==1:
            sp = 'PL'
          elif iadv==2:
-           sp = 'AL'
+           sp = 'LT'
          scheme = sp+'-dp'+str(dp)+'-hord'+str(hord)
 
          # convergence rate

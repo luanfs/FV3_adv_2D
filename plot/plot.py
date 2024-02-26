@@ -9,11 +9,11 @@ datadir  ='../data/' # must exist
 figformat = 'png'
 
 # some constants
-N    = 48 # number of cells
-tc   = 4  # test case
-hord = 0 # 1d adv scheme
-dp   = 2  #2d adv scheme
-iadv = 2
+N    = 192 # number of cells
+tc   = 3  # test case
+hord = 8 # 1d adv scheme
+dp   = 1  #2d adv scheme
+iadv = 1
 nplots = 12
 
 
@@ -28,11 +28,11 @@ y = np.linspace(-Lxo2, Lxo2, N)
 x, y = np.meshgrid(x,y)
 
 if tc == 1 or tc == 2 or tc == 3:
-   qmin = -0.2
+   qmin =  0.0
    qmax =  1.2
 elif tc == 4:
-   qmin = -0.2
-   qmax =  3.4
+   qmin =  0.0
+   qmax =  3.5
 
 for t in range(0, nplots+1):
    # basename for plotting
@@ -48,7 +48,7 @@ for t in range(0, nplots+1):
    z = np.reshape(z, (N,N))
 
    # plot the graph
-   #print(np.amin(z), np.amax(z))
+   print(np.amin(z), np.amax(z))
    plt.contourf(x, y, z, cmap='jet', levels=np.linspace(qmin,qmax,20))
    plt.colorbar(orientation='vertical', fraction=0.046, pad=0.04, format='%.1e')
 
