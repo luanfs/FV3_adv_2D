@@ -83,7 +83,7 @@ subroutine atmosphere_timestep(atm)
 
    ! solves dynamics
    call dy_core(atm%qa, atm%uc, atm%uc_old, atm%vc, atm%vc_old, atm%bd, atm%gridstruct, atm%time, atm%time_centered,&
-                   atm%dt, atm%dto2, atm%test_case, atm%hord, atm%lim_fac, atm%inner_dp, atm%outer_dp, atm%inner_adv)
+                   atm%dt, atm%dto2, atm%test_case, atm%hord, atm%lim_fac, atm%dp, atm%inner_adv)
 
    ! update times
    atm%time          = atm%time + atm%dt

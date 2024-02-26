@@ -9,8 +9,7 @@ implicit none
 contains
 
 
-subroutine time_averaged_cfl(gridstruct, bd, outer_crx, outer_cry, inner_crx, inner_cry, &
-                             uc_old, vc_old, uc, vc, inner_dp, outer_dp, dt)
+subroutine time_averaged_cfl(gridstruct, bd, crx, cry, uc_old, vc_old, uc, vc, dp, dt)
     !--------------------------------------------------
     ! Compute the time average CFL needed
     ! for the departure point scheme
@@ -19,11 +18,8 @@ subroutine time_averaged_cfl(gridstruct, bd, outer_crx, outer_cry, inner_crx, in
     type(fv_grid_bounds_type), intent(IN) :: bd
     type(fv_grid_type), intent(IN), target :: gridstruct
 
-    real(R_GRID), intent(INOUT), dimension(bd%is:bd%ie+1  , bd%jsd:bd%jed  ) :: outer_crx
-    real(R_GRID), intent(INOUT), dimension(bd%isd:bd%ied  , bd%js:bd%je+1  ) :: outer_cry
-
-    real(R_GRID), intent(INOUT), dimension(bd%is:bd%ie+1  , bd%jsd:bd%jed  ) :: inner_crx
-    real(R_GRID), intent(INOUT), dimension(bd%isd:bd%ied  , bd%js:bd%je+1  ) :: inner_cry
+    real(R_GRID), intent(INOUT), dimension(bd%is:bd%ie+1  , bd%jsd:bd%jed  ) :: crx
+    real(R_GRID), intent(INOUT), dimension(bd%isd:bd%ied  , bd%js:bd%je+1  ) :: cry
 
     real(R_GRID), intent(IN)   , dimension(bd%isd:bd%ied+1, bd%jsd:bd%jed  ) :: uc_old
     real(R_GRID), intent(IN)   , dimension(bd%isd:bd%ied  , bd%jsd:bd%jed+1) :: vc_old
@@ -33,8 +29,7 @@ subroutine time_averaged_cfl(gridstruct, bd, outer_crx, outer_cry, inner_crx, in
 
     real(R_GRID), intent(IN) :: dt
 
-    integer, intent(IN):: inner_dp ! inner departute point method !1 - Euler; 2-RK2
-    integer, intent(IN):: outer_dp ! outer departute point method !1 - Euler; 2-RK2
+    integer, intent(IN):: dp ! inner departute point method !1 - Euler; 2-RK2
 
     ! aux
     integer :: i, j
@@ -45,15 +40,7 @@ subroutine time_averaged_cfl(gridstruct, bd, outer_crx, outer_cry, inner_crx, in
     js  = bd%js
     je  = bd%je
 
-    call departure_cfl(gridstruct, bd, inner_crx, inner_cry, uc_old, vc_old, uc, vc, inner_dp, dt)
-
-    if (inner_dp==outer_dp) then
-       outer_crx(is:ie+1,:) = inner_crx(is:ie+1,:)
-       outer_cry(:,js:je+1) = inner_cry(:,js:je+1)
-    else
-       call departure_cfl(gridstruct, bd, outer_crx, outer_cry, uc_old, vc_old, uc, vc, outer_dp, dt)
-    endif
-
+    call departure_cfl(gridstruct, bd, crx, cry, uc_old, vc_old, uc, vc, dp, dt)
 end subroutine time_averaged_cfl
 
 subroutine departure_cfl(gridstruct, bd, crx, cry, &
@@ -201,16 +188,16 @@ subroutine compute_cfl(gridstruct, bd, crx, cry, uc, vc, dt, h)
    enddo
 end subroutine compute_cfl
 
-subroutine compute_ra_x_and_ra_y(ra_x, ra_y, inner_xfx, inner_yfx, inner_crx, inner_cry, gridstruct, bd)
+subroutine compute_ra_x_and_ra_y(ra_x, ra_y, inner_xfx, inner_yfx, crx, cry, gridstruct, bd)
     type(fv_grid_bounds_type), intent(IN) :: bd
     type(fv_grid_type), intent(IN), target :: gridstruct
     real(R_GRID), intent(INOUT), dimension(bd%is:bd%ie  , bd%jsd:bd%jed  ) :: ra_x
     real(R_GRID), intent(IN)   , dimension(bd%is:bd%ie+1, bd%jsd:bd%jed  ) :: inner_xfx
-    real(R_GRID), intent(IN)   , dimension(bd%is:bd%ie+1, bd%jsd:bd%jed  ) :: inner_crx
+    real(R_GRID), intent(IN)   , dimension(bd%is:bd%ie+1, bd%jsd:bd%jed  ) :: crx
 
     real(R_GRID), intent(INOUT), dimension(bd%isd:bd%ied, bd%js:bd%je    ) :: ra_y
     real(R_GRID), intent(IN)   , dimension(bd%isd:bd%ied, bd%js:bd%je+1  ) :: inner_yfx
-    real(R_GRID), intent(IN)   , dimension(bd%isd:bd%ied, bd%js:bd%je+1  ) :: inner_cry
+    real(R_GRID), intent(IN)   , dimension(bd%isd:bd%ied, bd%js:bd%je+1  ) :: cry
 
     ! Local:
     integer :: i, j

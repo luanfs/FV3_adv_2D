@@ -50,24 +50,17 @@ use fv_arrays, only: fv_grid_type, fv_grid_bounds_type, R_GRID
 !
 !-----------------------------------------------------------------------
 contains
- subroutine fv_tp_2d(q, outer_crx, outer_cry, inner_crx, inner_cry, hord, fx, fy, &
-                     outer_xfx, outer_yfx, inner_xfx, inner_yfx, &
+ subroutine fv_tp_2d(q, crx, cry,  hord, fx, fy, xfx, yfx, &
                      gridstruct, bd, ra_x, ra_y, lim_fac, inner_adv)
    type(fv_grid_bounds_type), intent(IN) :: bd
    integer, intent(in)::hord
    integer, intent(in)::inner_adv
 
-   real(R_GRID), intent(in)::  outer_crx(bd%is:bd%ie+1,bd%jsd:bd%jed)  !
-   real(R_GRID), intent(in)::  inner_crx(bd%is:bd%ie+1,bd%jsd:bd%jed)  !
+   real(R_GRID), intent(in)::  crx(bd%is:bd%ie+1,bd%jsd:bd%jed)  !
+   real(R_GRID), intent(in)::  cry(bd%isd:bd%ied,bd%js:bd%je+1 )  !
 
-   real(R_GRID), intent(in)::  outer_xfx(bd%is:bd%ie+1,bd%jsd:bd%jed)  !
-   real(R_GRID), intent(in)::  inner_xfx(bd%is:bd%ie+1,bd%jsd:bd%jed)  !
-
-   real(R_GRID), intent(in)::  outer_cry(bd%isd:bd%ied,bd%js:bd%je+1 )  !
-   real(R_GRID), intent(in)::  inner_cry(bd%isd:bd%ied,bd%js:bd%je+1 )  !
-
-   real(R_GRID), intent(in)::  outer_yfx(bd%isd:bd%ied,bd%js:bd%je+1 )  !
-   real(R_GRID), intent(in)::  inner_yfx(bd%isd:bd%ied,bd%js:bd%je+1 )  !
+   real(R_GRID), intent(in)::  xfx(bd%is:bd%ie+1,bd%jsd:bd%jed)  !
+   real(R_GRID), intent(in)::  yfx(bd%isd:bd%ied,bd%js:bd%je+1 )  !
 
    real(R_GRID), intent(in):: ra_x(bd%is:bd%ie,bd%jsd:bd%jed)
    real(R_GRID), intent(in):: ra_y(bd%isd:bd%ied,bd%js:bd%je)
@@ -102,11 +95,11 @@ contains
 
 
    !==================================================================================================================
-   call yppm(fy2, q, inner_cry, hord, isd,ied,isd,ied, js,je,jsd,jed, lim_fac)
+   call yppm(fy2, q, cry, hord, isd,ied,isd,ied, js,je,jsd,jed, lim_fac)
 
    do j=js,je+1
       do i=isd,ied
-         fyy(i,j) = inner_yfx(i,j) * fy2(i,j)
+         fyy(i,j) = yfx(i,j) * fy2(i,j)
       enddo
    enddo
 
@@ -124,15 +117,15 @@ contains
          enddo
       enddo
    endif
-   call xppm(fx, q_i, outer_crx, hord, is,ie,isd,ied, js,je,jsd,jed, lim_fac)
+   call xppm(fx, q_i, crx, hord, is,ie,isd,ied, js,je,jsd,jed, lim_fac)
 
 
    !==================================================================================================================
-   call xppm(fx2, q, inner_crx, hord, is,ie,isd,ied, jsd,jed,jsd,jed, lim_fac)
+   call xppm(fx2, q, crx, hord, is,ie,isd,ied, jsd,jed,jsd,jed, lim_fac)
 
    do j=jsd,jed
       do i=is,ie+1
-         fxx(i,j) =  inner_xfx(i,j) * fx2(i,j)
+         fxx(i,j) =  xfx(i,j) * fx2(i,j)
       enddo
    enddo 
 
@@ -151,19 +144,19 @@ contains
       enddo
    endif 
 
-   call yppm(fy, q_j, outer_cry, hord, is,ie,isd,ied, js,je,jsd,jed, lim_fac)
+   call yppm(fy, q_j, cry, hord, is,ie,isd,ied, js,je,jsd,jed, lim_fac)
 
 
    !==================================================================================================================
    do j=js,je
       do i=is,ie+1
-         fx(i,j) = 0.5*(fx(i,j)*outer_xfx(i,j) + fx2(i,j)*inner_xfx(i,j))
-         !fx(i,j) = fx2(i,j)*inner_xfx(i,j)
+         fx(i,j) = 0.5*(fx(i,j)*xfx(i,j) + fx2(i,j)*xfx(i,j))
+         !fx(i,j) = fx2(i,j)*xfx(i,j)
       enddo
    enddo
    do j=js,je+1
       do i=is,ie
-         fy(i,j) = 0.5*(fy(i,j)*outer_yfx(i,j) + fy2(i,j)*inner_yfx(i,j))
+         fy(i,j) = 0.5*(fy(i,j)*yfx(i,j) + fy2(i,j)*yfx(i,j))
          !fy(i,j) = 0.d0
       enddo
    enddo

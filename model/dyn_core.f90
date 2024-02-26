@@ -13,8 +13,8 @@ use fv_duogrid, only: ext_scalar_agrid, ext_scalar_cgrid
 implicit none
 
 contains
-subroutine dy_core(qa, uc, uc_old, vc_old, vc, bd, gridstruct, time, time_centered, dt, dto2, test_case, hord, lim_fac, &
-                   inner_dp, outer_dp, adv_scheme)
+subroutine dy_core(qa, uc, uc_old, vc_old, vc, bd, gridstruct, time, time_centered, dt, dto2, test_case, hord, &
+                   lim_fac, dp, adv_scheme)
    type(fv_grid_bounds_type), intent(INOUT) :: bd
    type(fv_grid_type), target, intent(INOUT) :: gridstruct
    real(R_GRID), intent(in) :: time, dt, dto2
@@ -28,25 +28,18 @@ subroutine dy_core(qa, uc, uc_old, vc_old, vc, bd, gridstruct, time, time_center
  
    integer, intent(IN) :: test_case
    integer, intent(IN) :: hord
-   integer, intent(IN) :: inner_dp
-   integer, intent(IN) :: outer_dp
+   integer, intent(IN) :: dp
    integer, intent(IN) :: adv_scheme
 
    real(R_GRID) :: dx
    real(R_GRID) :: dy
 
-   real(R_GRID) :: inner_xfx(bd%is:bd%ie+1, bd%jsd:bd%jed)
-   real(R_GRID) :: outer_xfx(bd%is:bd%ie+1, bd%jsd:bd%jed)
+   real(R_GRID) :: xfx(bd%is:bd%ie+1, bd%jsd:bd%jed)
+   real(R_GRID) :: yfx(bd%isd:bd%ied, bd%js:bd%je+1)
                         
-   real(R_GRID) :: inner_crx(bd%is:bd%ie+1, bd%jsd:bd%jed)
-   real(R_GRID) :: outer_crx(bd%is:bd%ie+1, bd%jsd:bd%jed)
-                        
-   real(R_GRID) :: inner_yfx(bd%isd:bd%ied, bd%js:bd%je+1)
-   real(R_GRID) :: outer_yfx(bd%isd:bd%ied, bd%js:bd%je+1)
-                        
-   real(R_GRID) :: inner_cry(bd%isd:bd%ied, bd%js:bd%je+1)
-   real(R_GRID) :: outer_cry(bd%isd:bd%ied, bd%js:bd%je+1)
- 
+   real(R_GRID) :: crx(bd%is:bd%ie+1, bd%jsd:bd%jed)
+   real(R_GRID) :: cry(bd%isd:bd%ied, bd%js:bd%je+1)
+
    real(R_GRID) :: flux_x(bd%is:bd%ie+1, bd%js:bd%je)
    real(R_GRID) :: flux_y(bd%is:bd%ie  , bd%js:bd%je+1)
 
@@ -83,20 +76,15 @@ subroutine dy_core(qa, uc, uc_old, vc_old, vc, bd, gridstruct, time, time_center
    call ext_scalar_cgrid(uc    , vc    , bd)
 
    ! compute time averaged cfl
-   call time_averaged_cfl(gridstruct, bd, outer_crx, outer_cry, inner_crx, inner_cry, &
-                             uc_old, vc_old, uc, vc, inner_dp, outer_dp, dt)
+   call time_averaged_cfl(gridstruct, bd, crx, cry, uc_old, vc_old, uc, vc, dp, dt)
  
    ! compute adv coeffs
-   inner_xfx(is:ie+1,jsd:jed) = inner_crx(is:ie+1,jsd:jed)*dx*dy
-   outer_xfx(is:ie+1,jsd:jed) = outer_crx(is:ie+1,jsd:jed)*dx*dy
+   xfx(is:ie+1,jsd:jed) = crx(is:ie+1,jsd:jed)*dx*dy
+   yfx(isd:ied,js:je+1) = cry(isd:ied,js:je+1)*dx*dy
 
-   inner_yfx(isd:ied,js:je+1) = inner_cry(isd:ied,js:je+1)*dx*dy
-   outer_yfx(isd:ied,js:je+1) = outer_cry(isd:ied,js:je+1)*dx*dy
+   call compute_ra_x_and_ra_y(ra_x, ra_y, xfx, yfx, crx, cry, gridstruct, bd)
 
-   call compute_ra_x_and_ra_y(ra_x, ra_y, inner_xfx, inner_yfx, inner_crx, inner_cry, gridstruct, bd)
-
-   call fv_tp_2d(qa, outer_crx, outer_cry, inner_crx, inner_cry, hord, flux_x, flux_y, &
-                     outer_xfx, outer_yfx, inner_xfx, inner_yfx, gridstruct, bd, ra_x, ra_y, lim_fac, adv_scheme)
+   call fv_tp_2d(qa, crx, cry, hord, flux_x, flux_y, xfx, yfx, gridstruct, bd, ra_x, ra_y, lim_fac, adv_scheme)
 
    ! compute the divergence
    div(is:ie,js:je) =  (flux_x(is+1:ie+1,js:je)-flux_x(is:ie,js:je))+ &
