@@ -9,11 +9,11 @@ datadir  ='../data/' # must exist
 figformat = 'png'
 
 # some constants
-N    = 768 # number of cells
-tc   = 3  # test case
-hord = 8 # 1d adv scheme
-dp   = 1  #2d adv scheme
-iadv = 1
+N    = 48 # number of cells
+tc   = 4  # test case
+hord = 0 # 1d adv scheme
+dp   = 2  #2d adv scheme
+iadv = 2
 nplots = 12
 
 
@@ -39,28 +39,32 @@ for t in range(0, nplots+1):
    basename = "tc"+str(tc)+"_N"+str(N)+"_hord"+str(hord)+"_iadv"+str(iadv)+"_dp"+str(dp)+"_t"
    input_name  = datadir+basename+str(t)+'.txt'
    output_name = graphdir+'adv2d_'+basename+str(t)+'.'+figformat
-   data = np.loadtxt(input_name)
+   data_info = np.loadtxt(input_name)
+
+   # get binary data
+   input_name_bin  = datadir+basename+str(t)+'.dat'
+   z = open(input_name_bin, 'rb')
+   z = np.fromfile(z, dtype=np.float64)
+   z = np.reshape(z, (N,N))
 
    # plot the graph
-   z = data[3:]
-   z = np.reshape(z, (N,N))
    #print(np.amin(z), np.amax(z))
    plt.contourf(x, y, z, cmap='jet', levels=np.linspace(qmin,qmax,20))
    plt.colorbar(orientation='vertical', fraction=0.046, pad=0.04, format='%.1e')
 
-   time = data[0]
+   time = data_info[0]
    time = str("{:.2e}".format(time))
 
-   massvar = data[1]
+   massvar = data_info[1]
    massvar = str("{:.2e}".format(massvar))
 
-   cfl = data[2]
+   cfl = data_info[2]
    cfl = str("{:.2e}".format(cfl))
 
    if iadv==1:
       sp = 'PL'
    elif iadv==2:
-      sp = 'AL'
+      sp = 'LT'
    # Label
    plt.xlabel('$x$ (km)')
    plt.ylabel('$y$ (km)')
