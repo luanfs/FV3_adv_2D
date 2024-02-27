@@ -73,10 +73,6 @@ bin/sw_core.obj: model/sw_core.f90
 bin/dyn_core.obj: model/dyn_core.f90
 	$(F90) $(FFLAG) -c  $^ -o $@ $(IMOD)
 	mv dyn_core.mod bin/.
-#dyn_core
-bin/dyn_core.obj: model/dyn_core.f90
-	$(F90) $(FFLAG) -c  $^ -o $@ $(IMOD)
-	mv dyn_core.mod bin/.
 	
 #atmosphere
 bin/atmosphere.obj: driver/atmosphere.f90
